@@ -113,12 +113,22 @@ public class SwingApp {
 			public void actionPerformed(ActionEvent end) {
 				String acc = AccountIDField.getText();
 				String pass = PasswordField.getText();
+				HashMap<String, String[]> accountInfo = new HashMap<String, String[]>();
+				getInformation(accountInfo, acc);
 				
 				if (accounts.containsKey(acc)) {
 					String test = accounts.get(acc);
+					String[] current = accountInfo.get(acc);
 					if (test.equals(pass)) {
-						AccountMenu menu = new AccountMenu(acc);
-						menu.setVisible(true);
+						if (current[3].equals("Disable") || current[3].equals("disable")) {
+							JFrame frame = new JFrame();
+							JOptionPane.showMessageDialog(frame, "ATM access is disabled for this account.");
+						} else {
+							AccountMenu menu = new AccountMenu(acc);
+							menu.setVisible(true);
+							AccountIDField.setText("");
+							PasswordField.setText("");
+						}
 					} else {
 						JFrame frame = new JFrame();
 						JOptionPane.showMessageDialog(frame, "Incorrect ID/password.");
@@ -155,4 +165,33 @@ public class SwingApp {
 		
 		
 	}
+	private void getInformation(HashMap<String, String[]> accountInfo, String acc) {
+		String line = null;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader("AccountInformation.txt")); 
+			
+			while ((line = reader.readLine()) != null)	{
+				String account = line;
+				int count = 0;
+				String[] words = new String[4];
+				while (count < 4) {
+					words[count] = (line = reader.readLine());
+					count++;
+				}
+				accountInfo.put(account, words);
+			}
+			
+			reader.close();
+		}
+		catch (FileNotFoundException ex) {
+			JFrame frame = new JFrame();
+			JOptionPane.showMessageDialog(frame, "Password file was not found.");
+		}
+		catch (IOException ex) {
+			JFrame frame = new JFrame();
+			JOptionPane.showMessageDialog(frame, "Error reading password file.");
+		}
+	}
+
 }

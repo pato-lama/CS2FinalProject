@@ -7,10 +7,10 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -19,7 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
 
-public class Deposit extends JDialog {
+public class Withdraw extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private JTextField textField;
@@ -30,9 +30,8 @@ public class Deposit extends JDialog {
 	public static void main(String[] args) {
 		try {
 			HashMap<String, String[]> empty = new HashMap<String, String[]>();
-			HashMap<String, String> empty2 = new HashMap<String, String>();
 			String[] emptyArr = null;
-			Deposit dialog = new Deposit("empty", emptyArr, empty, empty2);
+			Withdraw dialog = new Withdraw("", emptyArr, empty);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setVisible(true);
 		} catch (Exception e) {
@@ -43,23 +42,29 @@ public class Deposit extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public Deposit(String acc, String[] current, HashMap<String, String[]> accountInfo, HashMap<String, String> accounts) {
+	public Withdraw(String acc, String[] current, HashMap<String, String[]> accountInfo) {
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setLayout(new FlowLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.NORTH);
 		{
-			JLabel lblPutInAn = new JLabel("Put in an amount to deposit");
-			contentPanel.add(lblPutInAn);
+			JPanel panel = new JPanel();
+			panel.setBorder(new EmptyBorder(5, 5, 5, 5));
+			contentPanel.add(panel);
+			panel.setLayout(new FlowLayout());
+			{
+				JLabel lblPutInAn = new JLabel("Put in an amount to withdraw");
+				panel.add(lblPutInAn);
+			}
 		}
 		{
 			JPanel panel = new JPanel();
 			getContentPane().add(panel, BorderLayout.CENTER);
 			{
 				textField = new JTextField();
-				panel.add(textField);
 				textField.setColumns(10);
+				panel.add(textField);
 			}
 		}
 		{
@@ -69,10 +74,10 @@ public class Deposit extends JDialog {
 				JButton btnOK = new JButton("OK");
 				btnOK.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						depositMoney();
+						withdrawMoney();
 					}
 
-					private void depositMoney() {
+					private void withdrawMoney() {
 						int change;
 						try {
 						    change = Integer.parseInt(textField.getText());
@@ -85,16 +90,21 @@ public class Deposit extends JDialog {
 							JOptionPane.showMessageDialog(frame, "Please enter an integer greater than 0.");
 						} else {
 							int balance = Integer.parseInt(current[2]);
-							int newBalance = balance + change;
-							System.out.println(newBalance);
-							current[2] = Integer.toString(newBalance);
-							accountInfo.put(acc, current);
-							overwriteAccountInfo(accountInfo, accounts, current, balance);
+							int newBalance = balance - change;
+							if (newBalance < 0) {
+								JFrame frame = new JFrame();
+								JOptionPane.showMessageDialog(frame, "You don't have that much money to withdraw.");
+							} else {
+								System.out.println(newBalance);
+								current[2] = Integer.toString(newBalance);
+								accountInfo.put(acc, current);
+								overwriteAccountInfo(accountInfo, current, balance);
+							}
 						}
 						
 					}
 
-					private void overwriteAccountInfo(HashMap<String, String[]> accountInfo, HashMap<String, String> accounts, String[] current, int balance) {
+					private void overwriteAccountInfo(HashMap<String, String[]> accountInfo, String[] current, int balance) {
 						String line = "", oldText = "";
 						
 						try {
@@ -119,6 +129,7 @@ public class Deposit extends JDialog {
 							JFrame frame = new JFrame();
 							JOptionPane.showMessageDialog(frame, "Error reading password file.");
 						}
+						
 						
 					}
 				});
